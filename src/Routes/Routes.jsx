@@ -7,11 +7,17 @@ import SellForm from "../Pages/SellForm";
 import InvoicePage from "../Pages/InvoicePage";
 import SellHistory from "../Pages/SellHistory";
 import UpdateSaleItem from "../Pages/UpdateSaleItem";
+import UpdateStockShoes from "../Pages/UpdateStockShoes";
+import Signup from "../Pages/Login&SignUp/SignUp";
+import Login from "../Pages/Login&SignUp/Login";
+
+
+
 
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <Dashboard/>,
+    element:<Dashboard/>,
     children: [
       // Define child routes here if needed
       {
@@ -39,8 +45,20 @@ export const router = createBrowserRouter([
         element: <SellHistory/>
       },
       {
-        path:"/sales/:saleId/item/:itemIndex",
+        path:"/sale/:saleId",
         element: <UpdateSaleItem/>
+      },
+      {
+        path:"/update-shoe/:id",
+        element: <UpdateStockShoes/>
+      },
+      {
+        path:"/signUp",
+        element: <Signup/>
+      },
+      {
+        path:"/login",
+        element: <Login/>
       },
     ],
   },

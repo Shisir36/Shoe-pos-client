@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { FaEdit } from "react-icons/fa";
 const StockManagement = () => {
   const [stock, setStock] = useState([]);
   const [filteredStock, setFilteredStock] = useState([]);
@@ -9,6 +10,7 @@ const StockManagement = () => {
   const [filterDate, setFilterDate] = useState("");
   const [stockStatus, setStockStatus] = useState("all");
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -17,9 +19,12 @@ const StockManagement = () => {
   useEffect(() => {
     const fetchStock = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/shoes`);
+        const res = await axios.get(
+          `https://shoes-pos-server.vercel.app/api/shoes`
+        );
         setStock(res.data);
         setFilteredStock(res.data);
+        console.log(res.data);
       } catch (err) {
         console.error("Failed to load stock data:", err);
       } finally {
@@ -104,6 +109,7 @@ const StockManagement = () => {
               <th className="border p-2">Price/Pair (৳)</th>
               <th className="border p-2">Total Value</th>
               <th className="border p-2">Added At</th>
+              <th className="border p-2">Update</th>
             </tr>
           </thead>
           <tbody>
@@ -132,6 +138,14 @@ const StockManagement = () => {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
+                </td>
+                <td className="border p-2">
+                  <button
+                    onClick={() => navigate(`/update-shoe/${shoe._id}`)}
+                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                  >
+                    <FaEdit />
+                  </button>
                 </td>
               </tr>
             ))}

@@ -26,7 +26,9 @@ const SellForm = () => {
       }
     } else {
       try {
-        const res = await fetch(`http://localhost:5173/api/shoes/barcode/${code}`);
+        const res = await fetch(
+          `https://shoes-pos-server.vercel.app/api/shoes/barcode/${code}`
+        );
         if (!res.ok) throw new Error("Product not found");
         const data = await res.json();
 
@@ -93,6 +95,7 @@ const SellForm = () => {
     setCart(newCart);
     calculateSubtotal(newCart);
   };
+
   const handleSubmit = async () => {
     if (cart.length === 0) {
       alert("Cart is empty");
@@ -108,7 +111,7 @@ const SellForm = () => {
         brand: item.brand,
       }));
 
-      const res = await fetch(`http://localhost:5000/api/sell`, {
+      const res = await fetch(`https://shoes-pos-server.vercel.app/api/sell`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cart: formattedCart }),
@@ -131,7 +134,6 @@ const SellForm = () => {
       setCart([]);
       setSubtotal(0);
 
-      // Navigate to dynamic route with saleId
       navigate(`/invoice/${saleId}`);
     } catch (err) {
       console.log(err.message);
@@ -140,92 +142,131 @@ const SellForm = () => {
   };
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Sale Form</h2>
+    <div className="max-w-5xl mx-auto p-8  rounded-lg">
+      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-gray-900">
+        Sale Form
+      </h1>
 
-      <div className="mb-4 flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-4 mb-8">
         <input
           type="text"
           value={barcode}
           onChange={(e) => setBarcode(e.target.value)}
           placeholder="Scan or enter barcode"
-          className="flex-grow border p-2"
           onKeyDown={(e) => e.key === "Enter" && handleAddProduct()}
           autoFocus
+          spellCheck={false}
+          className="flex-grow border border-gray-300 rounded-lg px-4 py-3 text-lg md:text-xl
+            focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
         <button
           onClick={handleAddProduct}
-          className="bg-blue-600 text-white px-4 rounded"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-lg md:text-xl px-8 py-3 rounded-lg
+            transition-transform hover:scale-105 shadow"
+          type="button"
         >
           Add
         </button>
       </div>
 
       {cart.length > 0 && (
-        <table className="w-full border-collapse border">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="border p-2">SL</th>
-              <th className="border p-2">Name</th>
-              <th className="border p-2">Brand</th>
-              <th className="border p-2">Size</th>
-              <th className="border p-2">Price (৳)</th>
-              <th className="border p-2">Stock</th>
-              <th className="border p-2">Qty</th>
-              <th className="border p-2">Discount</th>
-              <th className="border p-2">Total</th>
-              <th className="border p-2">Remove</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cart.map((item, idx) => (
-              <tr key={item.barcode}>
-                <td className="border p-2">{idx + 1}</td>
-                <td className="border p-2">{item.name}</td>
-                <td className="border p-2">{item.brand}</td>
-                <td className="border p-2">{item.size}</td>
-                <td className="border p-2">{item.price}</td>
-                <td className="border p-2">{item.quantity}</td>
-                <td className="border p-2">
-                  <input
-                    type="number"
-                    min="1"
-                    max={item.quantity}
-                    value={item.qty}
-                    onChange={(e) => handleQtyChange(idx, e.target.value)}
-                    className="w-16 border p-1"
-                  />
-                </td>
-                <td className="border p-2">
-                  <input
-                    type="number"
-                    min="0"
-                    max={item.price * item.qty}
-                    value={item.discount}
-                    onChange={(e) => handleDiscountChange(idx, e.target.value)}
-                    className="w-20 border p-1"
-                  />
-                </td>
-                <td className="border p-2">{item.total}</td>
-                <td className="border p-2 text-center">
-                  <button
-                    className="text-red-600 font-bold"
-                    onClick={() => removeRow(idx)}
+        <div className="overflow-x-auto rounded-lg border border-gray-300 shadow-sm">
+          <table className="w-full min-w-[900px] table-auto text-left border-collapse">
+            <thead className="bg-indigo-100">
+              <tr>
+                {[
+                  "SL",
+                  "Name",
+                  "Brand",
+                  "Size",
+                  "Price (৳)",
+                  "Stock",
+                  "Qty",
+                  "Discount",
+                  "Total",
+                  "Remove",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="border-b border-gray-300 px-4 py-3 text-base md:text-lg font-semibold text-gray-700"
                   >
-                    ✖
-                  </button>
-                </td>
+                    {header}
+                  </th>
+                ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cart.map((item, idx) => (
+                <tr key={item.barcode} className="even:bg-gray-50  transition">
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg font-semibold">
+                    {idx + 1}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg truncate max-w-xs">
+                    {item.name}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg">
+                    {item.brand}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg text-center">
+                    {item.size}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg text-center">
+                    {item.price.toFixed(2)}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg text-center">
+                    {item.quantity}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max={item.quantity}
+                      value={item.qty}
+                      onChange={(e) => handleQtyChange(idx, e.target.value)}
+                      className="w-16 md:w-20 border border-gray-300 rounded-md px-2 py-1 text-base md:text-lg font-semibold
+                        focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center"
+                    />
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-2">
+                    <input
+                      type="number"
+                      min="0"
+                      max={item.price * item.qty}
+                      value={item.discount}
+                      onChange={(e) =>
+                        handleDiscountChange(idx, e.target.value)
+                      }
+                      className="w-20 md:w-24 border border-gray-300 rounded-md px-2 py-1 text-base md:text-lg font-semibold
+                        focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center"
+                    />
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-base md:text-lg font-bold text-indigo-700 text-center">
+                    {item.total.toFixed(2)}
+                  </td>
+                  <td className="border-b border-gray-300 px-4 py-3 text-center">
+                    <button
+                      className="text-red-600 font-bold text-2xl hover:text-red-800 transition"
+                      onClick={() => removeRow(idx)}
+                      aria-label="Remove item"
+                    >
+                      &times;
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
-      <div className="mt-4 text-right">
-        <p className="text-xl font-semibold">Subtotal: ৳ {subtotal}</p>
+      <div className="mt-10 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <p className="text-2xl md:text-3xl font-extrabold text-gray-900 select-none">
+          Subtotal: ৳ {subtotal.toFixed(2)}
+        </p>
         <button
           onClick={handleSubmit}
-          className="mt-2 bg-green-600 text-white px-6 py-2 rounded"
+          className="bg-green-600 hover:bg-green-700 text-white px-12 py-3 rounded-lg
+            text-xl md:text-2xl font-semibold shadow-md transition-transform hover:scale-105"
         >
           Sell & Generate Memo
         </button>

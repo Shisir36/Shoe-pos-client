@@ -20,7 +20,7 @@ const BarcodeScanner = ({ onScanSuccess, onClose }) => {
           const cleanedBarcode = decodedText.trim().replace(/\s+/g, "");
 
           // ✅ Optional: Reject invalid barcodes
-          const isValid = /^[a-zA-Z0-9\-]+$/.test(cleanedBarcode);
+          const isValid = /^[a-zA-Z0-9-]+$/.test(cleanedBarcode);
           if (!isValid) {
             alert("Invalid barcode format scanned.");
             return;
