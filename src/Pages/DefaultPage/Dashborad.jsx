@@ -1,15 +1,26 @@
-import React, { useState } from "react";
-import {  FiHome, FiSettings } from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+import { FiHome } from "react-icons/fi";
 import { NavLink, Outlet } from "react-router-dom";
-import { MdInventory, MdSell } from "react-icons/md";
+import { MdInventory, MdOutlineAddCircleOutline, MdSell } from "react-icons/md";
+import shoesIcon from "../../assets/running-shoes.gif";
+import { IoIosAddCircleOutline } from "react-icons/io";
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(true); // initially true
 
-  // Function to toggle sidebar visibility on small screens
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000); // 1 second por loading off
+
+    return () => clearTimeout(timer); // cleanup
+  }, []);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
   const navItems = [
     {
       name: "Home",
@@ -24,7 +35,7 @@ export default function Dashboard() {
     {
       name: "Add Shoes",
       path: "/add-shoes-item",
-      icon: <MdSell className="w-5 h-5 mr-3" />,
+      icon: <MdOutlineAddCircleOutline  className="w-5 h-5 mr-3" />  ,
     },
     {
       name: "Sell History",
@@ -34,7 +45,14 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="flex h-screen  font-sans antialiased">
+    <div className="flex h-screen font-sans antialiased relative">
+      {/* Loading Screen */}
+      {loading && (
+        <div className="absolute inset-0 z-50 bg-white flex items-center justify-center">
+          <img src={shoesIcon} alt="Loading..." className="h-24 w-24" />
+        </div>
+      )}
+
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 text-white transform ${
@@ -42,10 +60,7 @@ export default function Dashboard() {
         } md:relative md:translate-x-0 transition-transform duration-200 ease-in-out`}
       >
         <div className="flex items-center justify-between h-16 bg-gray-900 px-4">
-          {" "}
-          {/* Added px-4 for padding */}
           <h1 className="text-2xl font-semibold">Dashboard</h1>
-          {/* Close button for mobile sidebar */}
           <button
             onClick={toggleSidebar}
             className="text-gray-300 hover:text-white focus:outline-none md:hidden"
@@ -89,7 +104,6 @@ export default function Dashboard() {
         {/* Header */}
         <header className="flex items-center justify-between h-16 bg-white border-b border-gray-200 px-4 py-2">
           <div className="flex items-center">
-            {/* Hamburger icon for mobile */}
             <button
               onClick={toggleSidebar}
               className="text-gray-500 focus:outline-none focus:text-gray-700 md:hidden"
@@ -111,8 +125,8 @@ export default function Dashboard() {
             </button>
             <h2 className="text-xl font-semibold ml-4">Overview</h2>
           </div>
+
           <div className="flex items-center">
-            {/* User profile/dropdown (can be expanded) */}
             <button className="flex items-center text-gray-500 focus:outline-none md:ml-6">
               <span className="mr-2">John Doe</span>
               <img

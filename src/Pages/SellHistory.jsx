@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-
+import shoesIcon from "../assets/running-shoes.gif";
 const SellHistory = () => {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -120,15 +120,15 @@ const SellHistory = () => {
 
   return (
     <div
-      className="max-w-7xl mx-auto p-6 print:bg-white bg-white rounded shadow-md"
+      className="max-w-7xl mx-auto p-4 print:bg-white bg-white rounded shadow-md"
       ref={contentRef}
     >
       <h2 className="text-3xl font-bold mb-6 text-center text-blue-700">
         🧾 All Sell History
       </h2>
 
-      {/* Dropdown for filters */}
-      <div className="mb-4 flex flex-col items-center print:hidden space-y-2">
+      {/* Filters */}
+      <div className="mb-4 flex flex-col items-center print:hidden space-y-2 sm:flex-row sm:space-x-4 sm:space-y-0 justify-center">
         <select
           value={filterType}
           onChange={handleDropdownChange}
@@ -143,7 +143,7 @@ const SellHistory = () => {
         </select>
 
         {filterType === "custom" && (
-          <div className="flex space-x-2">
+          <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
             <input
               type="date"
               value={fromDate}
@@ -170,30 +170,36 @@ const SellHistory = () => {
         )}
       </div>
 
-      {/* Print button */}
-
       {loading ? (
         <div className="h-[300px] flex items-center justify-center text-xl font-semibold text-gray-600">
-          🔄 Loading Sell History...
+          <img src={shoesIcon} alt="Loading..." className=" h-22 w-22" />
         </div>
       ) : sales.length === 0 ? (
         <p className="text-lg text-center text-gray-500">No sales found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full text-base border border-gray-200 rounded shadow-sm">
+          <table className="min-w-full border border-gray-200 rounded shadow-sm">
             <thead className="bg-gray-100 text-gray-800 text-center">
               <tr>
-                <th className="py-3 px-2">#</th>
-                <th className="py-3 px-2">Invoice ID</th>
-                <th className="py-3 px-2">Date</th>
-                <th className="py-3 px-2">Item</th>
-                <th className="py-3 px-2">Size</th>
-                <th className="py-3 px-2">Brand</th>
-                <th className="py-3 px-2">Qty</th>
-                <th className="py-3 px-2">Price</th>
-                <th className="py-3 px-2">Discount</th>
-                <th className="py-3 px-2">Total</th>
-                <th className="py-3 px-2">Action</th>
+                <th className="py-3 px-2 whitespace-nowrap">#</th>
+                <th className="py-3 px-2 whitespace-nowrap">Invoice ID</th>
+                <th className="py-3 px-2 whitespace-nowrap">Date</th>
+                <th className="py-3 px-2 hidden sm:table-cell whitespace-nowrap">
+                  Item
+                </th>
+                <th className="py-3 px-2 hidden md:table-cell whitespace-nowrap">
+                  Size
+                </th>
+                <th className="py-3 px-2 hidden lg:table-cell whitespace-nowrap">
+                  Brand
+                </th>
+                <th className="py-3 px-2 whitespace-nowrap">Qty</th>
+                <th className="py-3 px-2 whitespace-nowrap">Price</th>
+                <th className="py-3 px-2 hidden md:table-cell whitespace-nowrap">
+                  Discount
+                </th>
+                <th className="py-3 px-2 whitespace-nowrap">Total</th>
+                <th className="py-3 px-2 whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -212,23 +218,37 @@ const SellHistory = () => {
                       key={sale._id}
                       className="text-center border-t hover:bg-gray-50"
                     >
-                      <td className="py-3 px-2">{index + 1}</td>
-                      <td className="py-3 px-2 text-blue-600">{sale._id}</td>
-                      <td className="py-3 px-2">{saleTime}</td>
-                      <td className="py-3 px-2">{item.shoeInfo.shoeName}</td>
-                      <td className="py-3 px-2">{item.shoeInfo.size}</td>
-                      <td className="py-3 px-2">{item.shoeInfo.brand}</td>
-                      <td className="py-3 px-2">{item.quantity}</td>
-                      <td className="py-3 px-2">
+                      <td className="py-3 px-2 whitespace-nowrap">
+                        {index + 1}
+                      </td>
+                      <td className="py-3 px-2 text-blue-600 whitespace-nowrap">
+                        {sale._id}
+                      </td>
+                      <td className="py-3 px-2 whitespace-nowrap">
+                        {saleTime}
+                      </td>
+                      <td className="py-3 px-2 hidden sm:table-cell whitespace-nowrap">
+                        {item.shoeInfo.shoeName}
+                      </td>
+                      <td className="py-3 px-2 hidden md:table-cell whitespace-nowrap">
+                        {item.shoeInfo.size}
+                      </td>
+                      <td className="py-3 px-2 hidden lg:table-cell whitespace-nowrap">
+                        {item.shoeInfo.brand}
+                      </td>
+                      <td className="py-3 px-2 whitespace-nowrap">
+                        {item.quantity}
+                      </td>
+                      <td className="py-3 px-2 whitespace-nowrap">
                         ৳ {item.sellPrice.toFixed(2)}
                       </td>
-                      <td className="py-3 px-2">
+                      <td className="py-3 px-2 hidden md:table-cell whitespace-nowrap">
                         ৳ {item.discount.toFixed(2)}
                       </td>
-                      <td className="py-3 px-2 font-semibold text-green-700">
+                      <td className="py-3 px-2 font-semibold text-green-700 whitespace-nowrap">
                         ৳ {item.totalAmount.toFixed(2)}
                       </td>
-                      <td className="py-3 px-2">
+                      <td className="py-3 px-2 whitespace-nowrap">
                         <button
                           onClick={() => navigate(`/sale/${sale._id}`)}
                           className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600 transition"
@@ -251,17 +271,25 @@ const SellHistory = () => {
                   return (
                     <React.Fragment key={sale._id}>
                       <tr className="text-center border-t hover:bg-gray-50">
-                        <td className="py-3 px-2">{index + 1}</td>
-                        <td className="py-3 px-2 text-blue-600">{sale._id}</td>
-                        <td className="py-3 px-2">{saleTime}</td>
+                        <td className="py-3 px-2 whitespace-nowrap">
+                          {index + 1}
+                        </td>
+                        <td className="py-3 px-2 text-blue-600 whitespace-nowrap">
+                          {sale._id}
+                        </td>
+                        <td className="py-3 px-2 whitespace-nowrap">
+                          {saleTime}
+                        </td>
                         <td className="py-3 px-2 text-left" colSpan={5}>
                           Total Items: {sale.items.length}
                         </td>
-                        <td className="py-3 px-2">{totalQty}</td>
-                        <td className="py-3 px-2 text-green-700 font-semibold">
+                        <td className="py-3 px-2 whitespace-nowrap">
+                          {totalQty}
+                        </td>
+                        <td className="py-3 px-2 text-green-700 font-semibold whitespace-nowrap">
                           ৳ {grandTotal.toFixed(2)}
                         </td>
-                        <td className="py-3 px-2 space-x-2">
+                        <td className="py-3 px-2 space-x-2 whitespace-nowrap">
                           <button
                             onClick={() => toggleExpand(sale._id)}
                             className="bg-gray-300 px-2 rounded hover:bg-gray-400"
@@ -280,43 +308,58 @@ const SellHistory = () => {
 
                       {isExpanded && (
                         <tr>
-                          <td colSpan="11" className="bg-gray-50 p-2">
-                            <table className="w-full text-sm border">
+                          <td
+                            colSpan="11"
+                            className="bg-gray-50 p-2 overflow-x-auto"
+                          >
+                            <table className="w-full text-sm border min-w-[600px]">
                               <thead className="bg-gray-200 text-center">
                                 <tr>
-                                  <th className="py-1 px-2 text-left">
+                                  <th className="py-1 px-2 text-left whitespace-nowrap">
                                     Item Name
                                   </th>
-                                  <th className="py-1 px-2">Size</th>
-                                  <th className="py-1 px-2">Brand</th>
-                                  <th className="py-1 px-2">Qty</th>
-                                  <th className="py-1 px-2">Price</th>
-                                  <th className="py-1 px-2">Discount</th>
-                                  <th className="py-1 px-2">Total</th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Size
+                                  </th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Brand
+                                  </th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Qty
+                                  </th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Price
+                                  </th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Discount
+                                  </th>
+                                  <th className="py-1 px-2 whitespace-nowrap">
+                                    Total
+                                  </th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {sale.items.map((item, i) => (
                                   <tr key={i} className="text-center border-t">
-                                    <td className="text-left py-1 px-2">
+                                    <td className="text-left py-1 px-2 whitespace-nowrap">
                                       {item.shoeInfo.shoeName}
                                     </td>
-                                    <td className="py-1 px-2">
+                                    <td className="py-1 px-2 whitespace-nowrap">
                                       {item.shoeInfo.size}
                                     </td>
-                                    <td className="py-1 px-2">
+                                    <td className="py-1 px-2 whitespace-nowrap">
                                       {item.shoeInfo.brand}
                                     </td>
-                                    <td className="py-1 px-2">
+                                    <td className="py-1 px-2 whitespace-nowrap">
                                       {item.quantity}
                                     </td>
-                                    <td className="py-1 px-2">
+                                    <td className="py-1 px-2 whitespace-nowrap">
                                       ৳ {item.sellPrice.toFixed(2)}
                                     </td>
-                                    <td className="py-1 px-2">
+                                    <td className="py-1 px-2 whitespace-nowrap">
                                       ৳ {item.discount.toFixed(2)}
                                     </td>
-                                    <td className="py-1 px-2 font-semibold text-green-700">
+                                    <td className="py-1 px-2 font-semibold text-green-700 whitespace-nowrap">
                                       ৳ {item.totalAmount.toFixed(2)}
                                     </td>
                                   </tr>

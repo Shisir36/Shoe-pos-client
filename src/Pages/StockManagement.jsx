@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaEdit } from "react-icons/fa";
+import shoesIcon from "../assets/running-shoes.gif";
 const StockManagement = () => {
   const [stock, setStock] = useState([]);
   const [filteredStock, setFilteredStock] = useState([]);
@@ -93,64 +94,66 @@ const StockManagement = () => {
       </div>
 
       {loading ? (
-        <div className="h-[300px] flex items-center justify-center text-lg">
-          Loading...
+        <div className="h-[300px] flex items-center justify-center text-xl font-semibold text-gray-600">
+          <img src={shoesIcon} alt="Loading..." className=" h-22 w-22" />
         </div>
       ) : (
-        <table className="table-auto w-full border-collapse shadow-md">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border p-2">Shoe Name</th>
-              <th className="border p-2">Brand</th>
-              <th className="border p-2">Article</th>
-              <th className="border p-2">Color</th>
-              <th className="border p-2">Size</th>
-              <th className="border p-2">Qty</th>
-              <th className="border p-2">Price/Pair (৳)</th>
-              <th className="border p-2">Total Value</th>
-              <th className="border p-2">Added At</th>
-              <th className="border p-2">Update</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStock.map((shoe, index) => (
-              <tr
-                key={index}
-                className={`text-center ${
-                  shoe.quantity === 0 ? "bg-red-50 text-red-600" : ""
-                }`}
-              >
-                <td className="border p-2">{shoe.shoeName}</td>
-                <td className="border p-2">{shoe.brand}</td>
-                <td className="border p-2">{shoe.articleNumber || "N/A"}</td>
-                <td className="border p-2">{shoe.color}</td>
-                <td className="border p-2">{shoe.size}</td>
-                <td className="border p-2">{shoe.quantity}</td>
-                <td className="border p-2">{shoe.pricePerPair} ৳</td>
-                <td className="border p-2 font-semibold text-green-700">
-                  {shoe.quantity * shoe.pricePerPair} ৳
-                </td>
-                <td className="border p-2 text-sm text-gray-600">
-                  {new Date(shoe.createdAt).toLocaleString("en-BD", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </td>
-                <td className="border p-2">
-                  <button
-                    onClick={() => navigate(`/update-shoe/${shoe._id}`)}
-                    className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    <FaEdit />
-                  </button>
-                </td>
+        <div className="overflow-x-auto rounded shadow-md border border-gray-200">
+          <table className="table-auto w-full border-collapse shadow-md">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border p-2">Shoe Name</th>
+                <th className="border p-2">Brand</th>
+                <th className="border p-2">Article</th>
+                <th className="border p-2">Color</th>
+                <th className="border p-2">Size</th>
+                <th className="border p-2">Qty</th>
+                <th className="border p-2">Price/Pair (৳)</th>
+                <th className="border p-2">Total Value</th>
+                <th className="border p-2">Added At</th>
+                <th className="border p-2">Update</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredStock.map((shoe, index) => (
+                <tr
+                  key={index}
+                  className={`text-center ${
+                    shoe.quantity === 0 ? "bg-red-50 text-red-600" : ""
+                  }`}
+                >
+                  <td className="border p-2">{shoe.shoeName}</td>
+                  <td className="border p-2">{shoe.brand}</td>
+                  <td className="border p-2">{shoe.articleNumber || "N/A"}</td>
+                  <td className="border p-2">{shoe.color}</td>
+                  <td className="border p-2">{shoe.size}</td>
+                  <td className="border p-2">{shoe.quantity}</td>
+                  <td className="border p-2">{shoe.pricePerPair} ৳</td>
+                  <td className="border p-2 font-semibold text-green-700">
+                    {shoe.quantity * shoe.pricePerPair} ৳
+                  </td>
+                  <td className="border p-2 text-sm text-gray-600">
+                    {new Date(shoe.createdAt).toLocaleString("en-BD", {
+                      day: "2-digit",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </td>
+                  <td className="border p-2">
+                    <button
+                      onClick={() => navigate(`/update-shoe/${shoe._id}`)}
+                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      <FaEdit />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
