@@ -8,57 +8,66 @@ import InvoicePage from "../Pages/InvoicePage";
 import SellHistory from "../Pages/SellHistory";
 import UpdateSaleItem from "../Pages/UpdateSaleItem";
 import UpdateStockShoes from "../Pages/UpdateStockShoes";
-import Signup from "../Pages/Login&SignUp/SignUp";
 import Login from "../Pages/Login&SignUp/Login";
-
-
-
+import Signup from "../Pages/Login&SignUp/SignUp";
+import PrivateRoute from "./PrivateRoute";
 
 export const router = createBrowserRouter([
+  // --- Public Routes ---
+  // Login and Signup are accessible to everyone.
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/signup",
+    element: <Signup/>,
+  },
+
+  // --- Protected Dashboard Routes ---
+  // The PrivateRoute component wraps the Dashboard.
+  // Only authenticated admins can access the Dashboard and its children.
   {
     path: "/",
-    element:<Dashboard/>,
+    element: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
+    // All these children are now protected by the PrivateRoute above.
     children: [
-      // Define child routes here if needed
       {
-        path: "/",
+        index: true, // This makes SellForm the default page for the "/" path
         element: <SellForm />,
       },
       {
-        path:"stock-management",
+        path: "stock-management",
         element: <StockManagement />,
       },
       {
-        path:"barcodes",
-        element: <BarcodePage/>,
+        path: "barcodes",
+        element: <BarcodePage />,
       },
       {
-        path:"add-shoes-item",
+        path: "add-shoes-item",
         element: <AddShoeForm />,
       },
       {
-        path:"invoice/:saleId",
-        element: <InvoicePage/>,
+        path: "invoice/:saleId",
+        element: <InvoicePage />,
       },
       {
-        path:"sell-history",
-        element: <SellHistory/>
+        path: "sell-history",
+        element: <SellHistory />,
       },
       {
-        path:"/sale/:saleId",
-        element: <UpdateSaleItem/>
+        // Note: Child paths should not start with a "/"
+        path: "sale/:saleId",
+        element: <UpdateSaleItem />,
       },
       {
-        path:"/update-shoe/:id",
-        element: <UpdateStockShoes/>
-      },
-      {
-        path:"/signUp",
-        element: <Signup/>
-      },
-      {
-        path:"/login",
-        element: <Login/>
+        path: "update-shoe/:id",
+        element: <UpdateStockShoes />,
       },
     ],
   },

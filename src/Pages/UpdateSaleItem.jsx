@@ -6,7 +6,6 @@ const UpdateSaleItem = () => {
   const { saleId } = useParams();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
-   // store non-item sale info like date, memo
 
   useEffect(() => {
     const fetchSale = async () => {
@@ -17,10 +16,9 @@ const UpdateSaleItem = () => {
         if (!res.ok) throw new Error("Sale not found");
         const data = await res.json();
 
-        // Add totalAmount calculation
         const updatedItems = data.items.map((item) => ({
           ...item,
-          totalAmount: item.quantity * item.sellPrice - item.discount,
+          totalAmount: item.quantity * item.sellPrice - (item.discount || 0),
         }));
 
         setItems(updatedItems);
@@ -36,15 +34,31 @@ const UpdateSaleItem = () => {
 
   const handleChange = (index, field, value) => {
     const updated = [...items];
-    updated[index][field] = Number(value);
-    updated[index].totalAmount =
-      updated[index].quantity * updated[index].sellPrice -
-      updated[index].discount;
+    let val = value;
+
+    // Prevent negative or invalid numbers
+    if (field === "quantity") {
+      val = Math.max(1, Number(val)); // minimum 1
+    } else if (field === "sellPrice" || field === "discount") {
+      val = Math.max(0, Number(val)); // minimum 0
+    } else {
+      val = Number(val);
+    }
+
+    updated[index][field] = val;
+
+    // Recalculate totalAmount safely
+    const qty = updated[index].quantity || 0;
+    const price = updated[index].sellPrice || 0;
+    const disc = updated[index].discount || 0;
+    updated[index].totalAmount = qty * price - disc;
+
     setItems(updated);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const res = await fetch(
         `https://shoes-pos-server.vercel.app/api/sales/${saleId}`,
@@ -67,18 +81,23 @@ const UpdateSaleItem = () => {
     }
   };
 
-  if (loading) return <div className="p-4 text-center">Loading sale...</div>;
+  if (loading)
+    return (
+      <div className="p-4 text-center text-lg font-semibold text-gray-700">
+        Loading sale...
+      </div>
+    );
 
   return (
-    <div className="max-w-4xl mx-auto mt-6 p-6 border rounded-lg shadow-lg bg-white">
-      <h2 className="text-2xl font-extrabold mb-6 text-center text-blue-700">
+    <div className="max-w-7xl mx-auto mt-6 p-6 border rounded-lg shadow-lg bg-white">
+      <h2 className="text-3xl font-extrabold mb-6 text-center text-blue-700">
         Edit Sale
       </h2>
 
       <form onSubmit={handleSubmit} className="w-full">
         <div className="overflow-x-auto rounded-md border border-gray-300 shadow-sm">
           <table className="min-w-full text-sm text-center">
-            <thead className="bg-gray-100 text-gray-700 uppercase text-xs sm:text-sm">
+            <thead className="bg-gray-100 text-gray-700 uppercase text-lg sm:text-sm">
               <tr>
                 <th className="py-3 px-4 whitespace-nowrap text-left">
                   Product
@@ -94,12 +113,14 @@ const UpdateSaleItem = () => {
               {items.map((item, idx) => (
                 <tr
                   key={idx}
-                  className="border-t border-gray-200 hover:bg-gray-50 transition-colors"
+                  className="border-t border-gray-200 hover:bg-gray-50 transition-colors text-sm"
                 >
-                  <td className="py-2 px-4 text-left">
+                  <td className="py-2 px-4 text-left whitespace-nowrap">
                     {item.shoeInfo.brand} - {item.shoeInfo.shoeName}
                   </td>
-                  <td className="py-2 px-4">{item.shoeInfo.size}</td>
+                  <td className="py-2 px-4 whitespace-nowrap">
+                    {item.shoeInfo.size}
+                  </td>
                   <td className="py-2 px-4">
                     <input
                       type="number"
@@ -135,7 +156,7 @@ const UpdateSaleItem = () => {
                       className="w-20 border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                   </td>
-                  <td className="py-2 px-4 font-semibold text-green-700">
+                  <td className="py-2 px-4 font-semibold text-green-700 whitespace-nowrap">
                     ৳ {item.totalAmount.toFixed(2)}
                   </td>
                 </tr>

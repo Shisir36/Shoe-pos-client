@@ -6,24 +6,34 @@ const UpdateStockShoes = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [updateData, setUpdateData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Fetch the shoe data when the component mounts
   useEffect(() => {
     axios
       .get(`https://shoes-pos-server.vercel.app/api/shoes/${id}`)
-      .then((res) => setUpdateData(res.data))
+      .then((res) => {
+        setUpdateData(res.data);
+        setIsLoading(false);
+      })
       .catch((err) => {
         console.error("Failed to fetch shoe:", err);
-        alert("Failed to load shoe data");
+        setError("Failed to load shoe data. Please try again later.");
+        setIsLoading(false);
       });
   }, [id]);
 
+  // Handle the form submission to update the shoe
   const handleUpdate = async (e) => {
     e.preventDefault();
     const form = e.target;
 
+    // Construct the updated shoe object from form values
     const updatedShoe = {
       shoeName: form.shoeName.value,
       brand: form.brand.value,
+      category: form.category.value, // Added category field
       articleNumber: form.articleNumber.value,
       color: form.color.value,
       size: Number(form.size.value),
@@ -37,23 +47,29 @@ const UpdateStockShoes = () => {
         updatedShoe
       );
       alert("Shoe updated successfully!");
-      navigate("/stock-management");
+      navigate("/stock-management"); // Navigate back to the stock list
       console.log(res);
     } catch (error) {
       console.error("Update failed", error);
-      alert("Update failed");
+      alert("Update failed. Please check the console for details.");
     }
   };
 
-  if (!updateData) return <p className="text-center mt-10">Loading...</p>;
+  // Display loading or error states
+  if (isLoading) return <p className="text-center mt-10 text-lg">Loading...</p>;
+  if (error)
+    return <p className="text-center mt-10 text-lg text-red-500">{error}</p>;
 
   return (
-    <div className="max-w-lg mx-auto mt-10">
-      <h2 className="text-xl font-bold mb-4 text-center">Update Shoe</h2>
-      <form onSubmit={handleUpdate} className="space-y-4">
+    <div className="max-w-2xl mx-auto mt-10 p-8 bg-white shadow-2xl rounded-2xl">
+      <h2 className="text-3xl font-bold mb-6 text-center text-slate-800">
+        Update Shoe Details
+      </h2>
+      <form onSubmit={handleUpdate} className="space-y-6">
         {[
           "shoeName",
           "brand",
+          "category", // Added category to the fields array
           "articleNumber",
           "color",
           "size",
@@ -61,7 +77,7 @@ const UpdateStockShoes = () => {
           "pricePerPair",
         ].map((field) => (
           <div key={field}>
-            <label className="block mb-1 font-semibold capitalize">
+            <label className="block mb-2 font-semibold capitalize text-slate-700">
               {field.replace(/([A-Z])/g, " $1")}
             </label>
             <input
@@ -72,16 +88,16 @@ const UpdateStockShoes = () => {
               }
               name={field}
               defaultValue={updateData[field]}
-              className="w-full border px-4 py-2 rounded"
+              className="w-full border border-slate-300 px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
               required
             />
           </div>
         ))}
         <button
           type="submit"
-          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold text-lg transition-transform transform hover:scale-105"
         >
-          Update
+          Update Shoe
         </button>
       </form>
     </div>

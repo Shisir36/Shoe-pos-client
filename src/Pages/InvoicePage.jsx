@@ -29,7 +29,6 @@ const InvoicePage = () => {
     fetchSale();
   }, [saleId, navigate]);
 
-
   const handlePrint = useReactToPrint({ content: () => printRef.current });
 
   if (!saleData) return <div>Loading invoice...</div>;
@@ -45,7 +44,10 @@ const InvoicePage = () => {
 
   return (
     <div className="max-w-xl mx-auto p-4">
-      <div ref={printRef} className="p-6 border border-gray-300 shadow bg-white font-mono text-sm">
+      <div
+        ref={printRef}
+        className="p-6 border border-gray-300 shadow bg-white font-mono text-sm"
+      >
         {/* Store Header */}
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold">Your Shop Name</h2>
@@ -57,11 +59,18 @@ const InvoicePage = () => {
         {/* Invoice Info */}
         <div className="mb-4 flex justify-between text-sm">
           <div>
-            <p><strong>Invoice ID:</strong> {saleId}</p>
-            <p><strong>Date:</strong> {new Date(saleData.soldAt).toLocaleString()}</p>
+            <p>
+              <strong>Invoice ID:</strong> {saleId}
+            </p>
+            <p>
+              <strong>Date:</strong>{" "}
+              {new Date(saleData.soldAt).toLocaleString()}
+            </p>
           </div>
           <div>
-            <p><strong>Cashier:</strong> {/* Add if needed */}</p>
+            <p>
+              <strong>Cashier:</strong> {/* Add if needed */}
+            </p>
           </div>
         </div>
 
@@ -85,9 +94,15 @@ const InvoicePage = () => {
                 <td className="py-1 px-2">{item.shoeInfo.shoeName}</td>
                 <td className="py-1 px-2">{item.shoeInfo.size}</td>
                 <td className="py-1 px-2 text-center">{item.quantity}</td>
-                <td className="py-1 px-2 text-right">৳ {item.sellPrice.toFixed(2)}</td>
-                <td className="py-1 px-2 text-right">৳ {item.discount.toFixed(2)}</td>
-                <td className="py-1 px-2 text-right">৳ {item.totalAmount.toFixed(2)}</td>
+                <td className="py-1 px-2 text-right">
+                  ৳ {item.sellPrice.toFixed(2)}
+                </td>
+                <td className="py-1 px-2 text-right">
+                  ৳ {item.discount.toFixed(2)}
+                </td>
+                <td className="py-1 px-2 text-right">
+                  ৳ {item.totalAmount.toFixed(2)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -95,8 +110,12 @@ const InvoicePage = () => {
 
         {/* Summary */}
         <div className="text-right border-t border-gray-300 pt-2">
-          <p><strong>Total Discount:</strong> ৳ {totalDiscount.toFixed(2)}</p>
-          <p className="text-lg font-bold">Grand Total: ৳ {grandTotal.toFixed(2)}</p>
+          <p>
+            <strong>Total Discount:</strong> ৳ {totalDiscount.toFixed(2)}
+          </p>
+          <p className="text-lg font-bold">
+            Grand Total: ৳ {grandTotal.toFixed(2)}
+          </p>
         </div>
 
         {/* Footer */}

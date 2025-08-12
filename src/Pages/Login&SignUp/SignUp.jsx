@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { Authcontext } from "../../Provider/AuthContext";
@@ -16,7 +16,7 @@ const Signup = () => {
     const name = form.name.value;
     const email = form.email.value;
     const password = form.password.value;
-    const photo = form.photo.value || ""; // optional photo
+    const photo = form.photo.value || "";
 
     if (password.length < 6) {
       setError("Password must be at least 6 characters long.");
@@ -26,20 +26,17 @@ const Signup = () => {
     try {
       const result = await createUser(email, password);
       await updateUserProfile(name, photo);
-      console.log("User created:", result.user);
-      // 🔥 Backend e POST kore user data pathano
+
       const userInfo = {
         name,
         email,
         photo,
-        role: "user", // default role
+        role: "user",
       };
 
       await fetch("https://shoes-pos-server.vercel.app/api/users", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userInfo),
       });
 
@@ -51,70 +48,95 @@ const Signup = () => {
         showConfirmButton: false,
       });
 
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      setTimeout(() => navigate("/login"), 2000);
     } catch (err) {
       setError(err.message);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <form
-        onSubmit={handleSignup}
-        className="bg-white p-8 rounded-xl shadow-md w-full max-w-md space-y-4"
-      >
-        <h2 className="text-2xl font-bold text-center">Create an Account</h2>
-        {error && <p className="text-red-500 text-center">{error}</p>}
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          required
-          className="w-full p-3 border rounded"
+    <div className="min-h-screen flex">
+      {/* Left side image */}
+      <div className="hidden md:flex w-1/2 bg-gradient-to-b from-black to-gray-900 items-center justify-center p-6">
+        <img
+          src="https://images.unsplash.com/photo-1542291026-7eec264c27ff"
+          alt="Shoes"
+          className="max-w-md rounded-lg shadow-lg"
         />
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          required
-          className="w-full p-3 border rounded"
-        />
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            placeholder="Password"
-            required
-            className="w-full p-3 border rounded"
-          />
-          <span
-            className="absolute right-3 top-3 cursor-pointer"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? <FaEyeSlash /> : <FaEye />}
-          </span>
-        </div>
-        <input
-          type="text"
-          name="photo"
-          placeholder="Photo URL (optional)"
-          className="w-full p-3 border rounded"
-        />
-        <button
-          type="submit"
-          className="bg-blue-500 text-white p-3 w-full rounded hover:bg-blue-600"
+      </div>
+
+      {/* Right side form */}
+      <div className="flex w-full md:w-1/2 items-center justify-center bg-gray-50 p-6">
+        <form
+          onSubmit={handleSignup}
+          className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md space-y-4"
         >
-          Sign Up
-        </button>
-        <p className="text-center mt-4">
-          Already have an account?{" "}
-          <a href="/login" className="text-blue-500 hover:underline">
-            Log In
-          </a>
-        </p>
-      </form>
+          <h2 className="text-3xl font-bold text-center text-gray-800">
+            Step Into Style
+          </h2>
+          <p className="text-center text-gray-500 mb-4">
+            Create your account & start shopping
+          </p>
+
+          {error && <p className="text-red-500 text-center">{error}</p>}
+
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          />
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          />
+
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              required
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+            />
+            <span
+              className="absolute right-3 top-3 cursor-pointer text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          <input
+            type="text"
+            name="photo"
+            placeholder="Photo URL (optional)"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+          />
+
+          <button
+            type="submit"
+            className="bg-black text-white p-3 w-full rounded-lg hover:bg-gray-800 transition"
+          >
+            Sign Up
+          </button>
+
+          <p className="text-center text-gray-600">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-black font-semibold hover:underline"
+            >
+              Log In
+            </Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

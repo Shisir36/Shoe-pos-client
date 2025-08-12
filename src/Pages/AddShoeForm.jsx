@@ -100,9 +100,10 @@ const ShoeAddForm = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold text-center text-green-600 mb-6">
-        Add New Shoe Stock  <GiRunningShoe className="inline-block w-8 h-8 ml-2 text-green-600" />
+    <div className="max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-lg">
+      <h2 className="text-3xl font-bold text-center text-green-600 mb-6">
+        Add New Shoe Stock{" "}
+        <GiRunningShoe className="inline-block w-8 h-8 ml-2 text-green-600" />
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,6 +120,7 @@ const ShoeAddForm = () => {
             <option value="Women">Women</option>
             <option value="Kids-Boys">Kids-Boys</option>
             <option value="Kids-Girls">Kids-Girls</option>
+            <option value="Baby">Baby</option>
           </select>
 
           <input
