@@ -1,33 +1,40 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Main component for the Sell Form
 const SellForm = () => {
-  // State management for the form
   const [cart, setCart] = useState([]);
   const [barcode, setBarcode] = useState("");
   const [subtotal, setSubtotal] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
- const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  // Refs for focusing inputs
+  const barcodeInputRef = useRef(null);
+
+  /**
+   * Adds a product to the cart after scanning.
+   */
   const handleAddProduct = async () => {
+    if (isLoading) return;
+
     const code = barcode.trim();
     if (!code) {
-      alert("Please enter or scan a barcode");
       return;
     }
 
     setIsLoading(true);
     const existingIndex = cart.findIndex((item) => item.barcode === code);
 
-    // If item already exists in the cart, update its quantity
+    // If item already exists in the cart, update its quantity by 1
     if (existingIndex !== -1) {
       const newCart = [...cart];
       const item = newCart[existingIndex];
       if (item.qty + 1 > item.quantity) {
         alert("Stock limit exceeded!");
       } else {
-        item.qty += 1;
-        item.total = item.price * item.qty - item.discount;
+        item.qty = (parseInt(item.qty) || 0) + 1; // Ensure qty is a number before adding
+        item.total = item.price * item.qty - (item.discount || 0);
         setCart(newCart);
         calculateSubtotal(newCart);
       }
@@ -47,9 +54,9 @@ const SellForm = () => {
           size: data.size,
           price: data.pricePerPair,
           quantity: data.stock, // Available stock
-          qty: 1, // Quantity in cart
-          discount: 0,
-          total: data.pricePerPair,
+          qty: "", // << পরিবর্তন এখানে: নতুন আইটেমের পরিমাণ খালি থাকবে
+          discount: "",
+          total: 0, // << পরিবর্তন এখানে: যেহেতু পরিমাণ খালি, মোট মূল্য ০
         };
 
         const newCart = [...cart, newItem];
@@ -66,56 +73,67 @@ const SellForm = () => {
 
   /**
    * Calculates the total price of all items in the cart.
-   * @param {Array} cartItems - The array of items in the cart.
    */
   const calculateSubtotal = (cartItems) => {
-    const total = cartItems.reduce((acc, item) => acc + item.total, 0);
+    const total = cartItems.reduce((acc, item) => acc + (item.total || 0), 0);
     setSubtotal(total);
   };
 
   /**
-   * Handles changes to the quantity input for a cart item.
-   * @param {number} index - The index of the item in the cart.
-   * @param {string} value - The new quantity value from the input.
+   * Handles changes to the quantity input for an item already in the cart.
    */
   const handleQtyChange = (index, value) => {
     const newCart = [...cart];
-    const qty = parseInt(value);
-    if (isNaN(qty) || qty < 1) return; // Prevent invalid or zero quantity
-    if (qty > newCart[index].quantity) {
-      alert("Stock limit exceeded!");
+
+    if (value === "") {
+      // Allow temporarily emptying the field
+      newCart[index].qty = "";
+      newCart[index].total = 0 - Number(newCart[index].discount || 0);
+      setCart(newCart);
+      calculateSubtotal(newCart);
       return;
     }
-    newCart[index].qty = qty;
+
+    const qty = parseInt(value);
+    if (isNaN(qty) || qty < 1) return;
+    if (qty > newCart[index].quantity) {
+      alert("Stock limit exceeded!");
+      newCart[index].qty = newCart[index].quantity;
+    } else {
+      newCart[index].qty = qty;
+    }
+
     newCart[index].total =
-      Number(newCart[index].price) * qty - Number(newCart[index].discount || 0);
+      Number(newCart[index].price) * newCart[index].qty -
+      Number(newCart[index].discount || 0);
     setCart(newCart);
     calculateSubtotal(newCart);
   };
 
   /**
    * Handles changes to the discount input for a cart item.
-   * @param {number} index - The index of the item in the cart.
-   * @param {string} value - The new discount value from the input.
    */
   const handleDiscountChange = (index, value) => {
     const newCart = [...cart];
     const discount = parseFloat(value) || 0;
     if (discount < 0) return;
-    if (discount > Number(newCart[index].price) * newCart[index].qty) {
+    if (
+      discount >
+      Number(newCart[index].price) * (Number(newCart[index].qty) || 0)
+    ) {
       alert("Discount cannot exceed total price");
       return;
     }
     newCart[index].discount = discount;
     newCart[index].total =
-      Number(newCart[index].price) * newCart[index].qty - discount;
+      Number(newCart[index].price) * (Number(newCart[index].qty) || 0) -
+      discount;
     setCart(newCart);
     calculateSubtotal(newCart);
   };
 
   /**
    * Removes an item from the cart.
-   * @param {number} index - The index of the item to remove.
    */
   const removeRow = (index) => {
     const newCart = cart.filter((_, i) => i !== index);
@@ -130,6 +148,13 @@ const SellForm = () => {
     if (cart.length === 0) {
       alert("Cart is empty");
       return;
+    }
+    // Final validation before submitting
+    for (const item of cart) {
+      if (!item.qty || parseInt(item.qty) < 1) {
+        alert(`Please enter a valid quantity for "${item.name}".`);
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -150,6 +175,7 @@ const SellForm = () => {
 
       if (!res.ok) {
         const error = await res.json();
+        setIsLoading(false);
         alert(error.message || "Sale failed");
         return;
       }
@@ -175,11 +201,8 @@ const SellForm = () => {
   };
 
   return (
-    <div className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8">
-      {/* Animated Background Elements */}
-
-      <div className="relative max-w-7xl mx-auto">
-        {/* Header */}
+    <div className="min-h-screen py-8 ">
+      <div className="relative mx-auto">
         <div className="text-center mb-10 md:mb-12">
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 md:mb-6 bg-gradient-to-r from-white via-green-500 to-blue-200 bg-clip-text text-transparent animate-pulse">
             Sale Shoes
@@ -187,7 +210,6 @@ const SellForm = () => {
           <div className="w-24 md:w-32 h-1 bg-gradient-to-r from-purple-500 to-blue-500 mx-auto rounded-full"></div>
         </div>
 
-        {/* Main Form Container */}
         <div className="backdrop-blur-xl bg-white/10 rounded-2xl md:rounded-3xl border border-white/20 shadow-2xl p-4 sm:p-6 md:p-8 mb-8">
           {/* Barcode Input Section */}
           <div className="mb-8 md:mb-12">
@@ -198,255 +220,144 @@ const SellForm = () => {
                 </label>
                 <div className="relative">
                   <input
+                    ref={barcodeInputRef}
                     type="text"
                     value={barcode}
                     onChange={(e) => setBarcode(e.target.value)}
                     placeholder="Scan or enter barcode..."
                     onKeyDown={(e) => e.key === "Enter" && handleAddProduct()}
                     autoFocus
-                    spellCheck={false}
-                    className="w-full  bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl md:rounded-2xl px-4 py-3 md:px-6 md:py-3 text-lg md:text-xl text-black placeholder-black/50
-                      focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300
-                      hover:bg-white/25 hover:border-white/40"
+                    disabled={isLoading}
+                    className="w-full bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl md:rounded-2xl px-4 py-3 md:px-6 md:py-3 text-lg md:text-xl text-black placeholder-black/50
+                              focus:outline-none focus:ring-4 focus:ring-purple-500/50 focus:border-purple-400 transition-all duration-300
+                              hover:bg-white/25 hover:border-white/40 disabled:opacity-50"
                   />
+                  {isLoading && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+                    </div>
+                  )}
                 </div>
               </div>
-              <button
-                onClick={handleAddProduct}
-                disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 via-purple-700 to-blue-700 hover:from-purple-700 hover:via-purple-800 hover:to-blue-800
-                  text-white font-bold text-lg md:text-xl px-6 py-2 md:px-10 md:py-3 rounded-xl md:rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl
-                  disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none relative overflow-hidden group"
-                type="button"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-                <span className="relative">
-                  {isLoading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Adding...
-                    </div>
-                  ) : (
-                    "Add Product"
-                  )}
-                </span>
-              </button>
             </div>
           </div>
 
           {/* Cart Section: Responsive Table / Cards */}
           {cart.length > 0 && (
-            <div className="mb-8 md:mb-12 transform transition-all duration-500 animate-fadeIn">
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-hidden rounded-2xl border border-white/20 backdrop-blur-xl bg-white/5">
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[900px] text-left">
-                    <thead className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-sm">
-                      <tr className=" text-center">
-                        {[
-                          "SL",
-                          "Product Name",
-                          "Brand",
-                          "Size",
-                          "Price (৳)",
-                          "Stock",
-                          "Qty",
-                          "Discount",
-                          "Total",
-                          "Action",
-                        ].map((header) => (
-                          <th
-                            key={header}
-                            className="px-6 py-5 text-lg font-bold text-white/90 border-b border-white/10"
-                          >
-                            {header}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cart.map((item, idx) => (
-                        <tr
-                          key={item.barcode}
-                          className="group hover:bg-white/10 transition-all duration-300 border-b border-white/5 text-center"
+            <div className="hidden md:block overflow-hidden rounded-2xl border border-white/20 backdrop-blur-xl bg-white/5">
+              <div className="overflow-x-auto">
+                <table className="w-full table-auto text-left">
+                  <thead className="bg-gradient-to-r from-purple-900/50 to-blue-900/50 backdrop-blur-sm">
+                    <tr className="text-center">
+                      {[
+                        "SL",
+                        "Product Name",
+                        "Brand",
+                        "Size",
+                        "Price (৳)",
+                        "Stock",
+                        "Qty",
+                        "Discount",
+                        "Total",
+                        "Action",
+                      ].map((header) => (
+                        <th
+                          key={header}
+                          className="px-4 py-4 text-base font-bold text-white/90 border-b border-white/10 whitespace-nowrap"
                         >
-                          <td className="px-6 py-4 text-lg font-bold text-purple-300">
-                            {String(idx + 1).padStart(2, "0")}
-                          </td>
-                          <td className="px-6 py-4 text-lg text-black font-medium max-w-xs truncate">
-                            {item.name}
-                          </td>
-                          <td className="px-6 py-4 text-lg black/80">
-                            {item.brand}
-                          </td>
-                          <td className="px-6 py-4 text-lg text-center">
-                            <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-3 py-1 rounded-lg font-semibold">
-                              {item.size}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-lg text-center text-green-300 font-semibold">
-                            {item.price.toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 text-lg text-center">
-                            <span
-                              className={`px-3 py-1 rounded-lg font-semibold ${
-                                item.quantity > 0
-                                  ? "bg-green-600/10 text-green-500"
-                                  : "bg-red-600/30 text-red-400"
-                              }`}
-                            >
-                              {item.quantity}
-                            </span>
-                          </td>
-                          <td className="px-6 py-3">
-                            <input
-                              type="number"
-                              min="1"
-                              max={item.quantity}
-                              value={item.qty}
-                              onChange={(e) =>
-                                handleQtyChange(idx, e.target.value)
-                              }
-                              className="w-20 bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl px-3 py-2 text-lg text-black font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all hover:bg-white/25"
-                            />
-                          </td>
-                          <td className="px-6 py-3">
-                            <input
-                              type="number"
-                              min="0"
-                              max={item.price * item.qty}
-                              value={item.discount}
-                              onChange={(e) =>
-                                handleDiscountChange(idx, e.target.value)
-                              }
-                              className="w-24 bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl px-3 py-2 text-lg text-black font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all hover:bg-white/25"
-                            />
-                          </td>
-                          <td className="px-6 py-4 text-lg font-black text-center">
-                            <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent text-xl">
-                              {item.total.toFixed(2)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-center">
-                            <button
-                              className="w-10 h-10 bg-red-600/20 hover:bg-red-600/40 rounded-xl text-red-400 hover:text-red-300 font-bold text-xl transition-all duration-300 hover:scale-110 hover:rotate-90 border border-red-500/30 hover:border-red-400/50"
-                              onClick={() => removeRow(idx)}
-                              aria-label="Remove item"
-                            >
-                              ×
-                            </button>
-                          </td>
-                        </tr>
+                          {header}
+                        </th>
                       ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Mobile Card View */}
-              <div className="md:hidden grid grid-cols-1 gap-4">
-                {cart.map((item, idx) => (
-                  <div
-                    key={item.barcode}
-                    className="bg-white/10 border border-white/20 rounded-2xl p-4 flex flex-col gap-4 animate-slideInUp"
-                    style={{ animationDelay: `${idx * 100}ms` }}
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-lg font-bold ">{item.name}</h3>
-                        <p className="text-sm ">{item.brand}</p>
-                      </div>
-                      <button
-                        className="w-8 h-8 flex-shrink-0 bg-red-600/20 hover:bg-red-600/40 rounded-lg text-red-400 hover:text-red-300 font-bold text-xl transition-all duration-300"
-                        onClick={() => removeRow(idx)}
-                        aria-label="Remove item"
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cart.map((item, idx) => (
+                      <tr
+                        key={item.barcode + idx}
+                        className="group hover:bg-white/10 transition-all duration-300 border-b border-white/5 text-center"
                       >
-                        ×
-                      </button>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4 border-y border-white/10 py-4">
-                      <div>
-                        <label className="block text-xs text-white/60 uppercase">
-                          Price
-                        </label>
-                        <p className="text-green-300 font-semibold">
-                          ৳ {item.price.toFixed(2)}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/60 uppercase">
-                          Size
-                        </label>
-                        <p className="font-semibold text-white">{item.size}</p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/60 uppercase">
-                          Stock
-                        </label>
-                        <p
-                          className={`font-semibold ${
-                            item.quantity > 10
-                              ? "text-green-300"
-                              : item.quantity > 5
-                              ? "text-yellow-300"
-                              : "text-red-300"
-                          }`}
-                        >
-                          {item.quantity} available
-                        </p>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-white/60 uppercase">
-                          Total
-                        </label>
-                        <p className="font-black bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent text-lg">
-                          ৳ {item.total.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-white/80 mb-1">
-                          Quantity
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          max={item.quantity}
-                          value={item.qty}
-                          onChange={(e) => handleQtyChange(idx, e.target.value)}
-                          className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-white/80 mb-1">
-                          Discount (৳)
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          max={item.price * item.qty}
-                          value={item.discount}
-                          onChange={(e) =>
-                            handleDiscountChange(idx, e.target.value)
-                          }
-                          className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        <td className="px-3 py-3 text-base font-bold text-purple-300 whitespace-nowrap">
+                          {String(idx + 1).padStart(2, "0")}
+                        </td>
+                        <td className="px-3 py-3 text-base text-black font-medium truncate max-w-[180px]">
+                          {item.name}
+                        </td>
+                        <td className="px-3 py-3 text-base text-black/80 whitespace-nowrap">
+                          {item.brand}
+                        </td>
+                        <td className="px-2 py-3 w-20 text-center whitespace-nowrap">
+                          <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-2 py-2 rounded-lg font-semibold">
+                            {item.size}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3 text-base text-green-400 font-semibold whitespace-nowrap">
+                          {item.price.toFixed(2)}
+                        </td>
+                        <td className="px-2 py-3">
+                          <span
+                            className={`px-2 py-1 rounded-lg font-semibold ${
+                              item.quantity > 0
+                                ? "bg-green-600/10 text-green-500"
+                                : "bg-red-600/30 text-red-400"
+                            }`}
+                          >
+                            {item.quantity}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            min="1"
+                            max={item.quantity}
+                            value={item.qty}
+                            onChange={(e) =>
+                              handleQtyChange(idx, e.target.value)
+                            }
+                            onWheel={(e) => e.currentTarget.blur()}
+                            className="w-16 bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl px-2 py-1 text-base text-black font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </td>
+                        <td className="px-2 py-3">
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.discount}
+                            onChange={(e) =>
+                              handleDiscountChange(idx, e.target.value)
+                            }
+                            onWheel={(e) => e.currentTarget.blur()}
+                            className="w-20 bg-white/20 backdrop-blur-sm border border-black/30 rounded-xl px-2 py-1 text-base text-black font-semibold text-center focus:outline-none focus:ring-2 focus:ring-purple-500"
+                          />
+                        </td>
+                        <td className="px-2 py-3 text-base font-black text-center whitespace-nowrap">
+                          <span className="bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                            {item.total.toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-2 py-3 text-center">
+                          <button
+                            className="w-8 h-8 bg-red-600/20 hover:bg-red-600/40 rounded-xl text-red-400 hover:text-red-700 font-bold text-lg transition-all duration-300 hover:scale-110 hover:rotate-90 border border-red-500/30 hover:border-red-400/50"
+                            onClick={() => removeRow(idx)}
+                            aria-label="Remove item"
+                          >
+                            ×
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
 
           {/* Summary and Action Section */}
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8 mt-8">
             <div className="text-center md:text-left">
               <p className="text-white/60 text-lg md:text-xl font-medium uppercase tracking-widest">
-                Total Amount
+                {" "}
+                Total Amount{" "}
               </p>
               <div className="text-4xl md:text-4xl font-black mt-2">
                 <span className="bg-gradient-to-r from-green-400 via-emerald-400 to-teal-400 bg-clip-text text-transparent">
@@ -479,7 +390,6 @@ const SellForm = () => {
         </div>
       </div>
 
-      {/* Custom animations (no changes needed here) */}
       <style jsx>{`
         @keyframes fadeIn {
           from {
@@ -491,7 +401,6 @@ const SellForm = () => {
             transform: translateY(0);
           }
         }
-
         @keyframes slideInUp {
           from {
             opacity: 0;
@@ -502,14 +411,12 @@ const SellForm = () => {
             transform: translateY(0);
           }
         }
-
         .animate-fadeIn {
-          animation: fadeIn 0.8s ease-out forwards;
+          animation: fadeIn 0.5s ease-out forwards;
         }
-
         .animate-slideInUp {
-          animation: slideInUp 0.6s ease-out forwards;
-          opacity: 0; /* Start hidden for animation */
+          animation: slideInUp 0.5s ease-out forwards;
+          opacity: 0;
         }
       `}</style>
     </div>

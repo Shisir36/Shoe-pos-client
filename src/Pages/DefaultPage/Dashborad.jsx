@@ -67,7 +67,7 @@ export default function Dashboard() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-gray-800 text-white transform ${
+        className={`fixed inset-y-0 left-0 z-30 w-48 bg-gray-800 text-white transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0 transition-transform duration-200 ease-in-out shadow-lg`}
       >

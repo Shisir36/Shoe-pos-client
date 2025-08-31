@@ -29,16 +29,12 @@ const InvoicePage = () => {
     fetchSale();
   }, [saleId, navigate]);
 
-  const handlePrint = useReactToPrint({ content: () => printRef.current });
+  const handlePrint = useReactToPrint({ contentRef: printRef });
 
   if (!saleData) return <div>Loading invoice...</div>;
 
   const grandTotal = saleData.items.reduce(
     (acc, item) => acc + item.totalAmount,
-    0
-  );
-  const totalDiscount = saleData.items.reduce(
-    (acc, item) => acc + (item.discount || 0),
     0
   );
 
@@ -50,10 +46,10 @@ const InvoicePage = () => {
       >
         {/* Store Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold">Your Shop Name</h2>
-          <p>123, Street Name, City</p>
-          <p>Phone: 0123456789</p>
-          <p>Email: info@yourshop.com</p>
+          <h2 className="text-2xl font-bold">Your Choice</h2>
+          <p>Mirzapur Bazar</p>
+          <p>Masjid Market, Mirzapur</p>
+          <p>Phone: 01714312425</p>
         </div>
 
         {/* Invoice Info */}
@@ -75,7 +71,7 @@ const InvoicePage = () => {
         </div>
 
         {/* Items Table */}
-        <table className="w-full border-collapse border text-left mb-4">
+        <table className="w-full border-collapse border text-center mb-4">
           <thead>
             <tr className="border-b border-gray-300">
               <th className="py-1 px-2">#</th>
@@ -83,22 +79,18 @@ const InvoicePage = () => {
               <th className="py-1 px-2">Size</th>
               <th className="py-1 px-2 text-center">Qty</th>
               <th className="py-1 px-2 text-right">Price</th>
-              <th className="py-1 px-2 text-right">Discount</th>
               <th className="py-1 px-2 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
             {saleData.items.map((item, idx) => (
-              <tr key={idx} className="border-b border-gray-200">
+              <tr key={idx} className="border-b border-gray-200 text-center">
                 <td className="py-1 px-2">{idx + 1}</td>
                 <td className="py-1 px-2">{item.shoeInfo.shoeName}</td>
                 <td className="py-1 px-2">{item.shoeInfo.size}</td>
                 <td className="py-1 px-2 text-center">{item.quantity}</td>
                 <td className="py-1 px-2 text-right">
                   ৳ {item.sellPrice.toFixed(2)}
-                </td>
-                <td className="py-1 px-2 text-right">
-                  ৳ {item.discount.toFixed(2)}
                 </td>
                 <td className="py-1 px-2 text-right">
                   ৳ {item.totalAmount.toFixed(2)}
@@ -110,9 +102,6 @@ const InvoicePage = () => {
 
         {/* Summary */}
         <div className="text-right border-t border-gray-300 pt-2">
-          <p>
-            <strong>Total Discount:</strong> ৳ {totalDiscount.toFixed(2)}
-          </p>
           <p className="text-lg font-bold">
             Grand Total: ৳ {grandTotal.toFixed(2)}
           </p>
@@ -121,7 +110,6 @@ const InvoicePage = () => {
         {/* Footer */}
         <div className="text-center mt-8 text-xs text-gray-600">
           <p>Thank you for shopping with us!</p>
-          <p>Return/Exchange within 7 days with this receipt.</p>
         </div>
       </div>
 

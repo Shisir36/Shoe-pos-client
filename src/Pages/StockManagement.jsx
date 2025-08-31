@@ -174,7 +174,7 @@ const StockManagement = () => {
         📦 Stock Management
       </h2>
 
-      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="mb-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <input
           type="text"
           placeholder="Search by name, brand, size..."
